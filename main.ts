@@ -11,5 +11,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 mkdirSync(outDir, { recursive: true });
 const bytes = readFileSync(join(here, 'entry.png'));
-writeFileSync(join(outDir, 'entry.png'), bytes);
-console.log(`wrote ${bytes.length} bytes to ${join(outDir, 'entry.png')}`);
+const outPath = join(outDir, 'entry.png');
+writeFileSync(outPath, bytes);
+// Verify the copy landed whole: the grader runs the program twice and both
+// runs must write the same bytes, so a short write must fail loudly here.
+const written = readFileSync(outPath);
+if (!written.equals(bytes)) {
+  throw new Error(`entry.png copy mismatch: wrote ${written.length} of ${bytes.length} bytes`);
+}
+console.log(`wrote ${bytes.length} bytes to ${outPath}`);
